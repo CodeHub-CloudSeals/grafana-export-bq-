@@ -1,9 +1,10 @@
 import pandas as pd
 from google.cloud import bigquery
+
 # Load CSV
 df = pd.read_csv("grafana_metrics.csv")
 
-# ✅ Fix: Convert timestamp to datetime
+# Fix: Convert timestamp to datetime
 df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
 print(df.dtypes)
 
@@ -17,9 +18,9 @@ client = bigquery.Client()
 # Check if table exists
 try:
     client.get_table(table_id)
-    print(f"✅ Table {table_id} exists. Loading data.")
+    print(f"Table {table_id} exists. Loading data.")
 except:
-    print(f"⚠️ Table not found. Creating table: {table_id}")
+    print(f"Table not found. Creating table: {table_id}")
     schema = [
         bigquery.SchemaField("timestamp", "TIMESTAMP"),
         bigquery.SchemaField("metric", "STRING"),
@@ -28,9 +29,9 @@ except:
     ]
     table = bigquery.Table(table_id, schema=schema)
     client.create_table(table)
-    print(f"✅ Created table {table_id}")
+    print(f"Created table {table_id}")
 
 # Load to BigQuery
 job = client.load_table_from_dataframe(df, table_id)
 job.result()
-print("✅ Data loaded into BigQuery")
+print("Data loaded into BigQuery")
