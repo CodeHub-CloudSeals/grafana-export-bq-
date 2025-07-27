@@ -1,6 +1,5 @@
 import pandas as pd
 from google.cloud import bigquery
-
 # Load CSV
 df = pd.read_csv("grafana_metrics.csv")
 
