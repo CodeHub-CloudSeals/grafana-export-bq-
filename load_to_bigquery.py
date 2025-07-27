@@ -1,37 +1,36 @@
-from google.cloud import bigquery
 import pandas as pd
+from google.cloud import bigquery
 
-# Load the DataFrame
+# Load CSV
 df = pd.read_csv("grafana_metrics.csv")
 
-# Set your project and dataset/table IDs
+# ✅ Fix: Convert timestamp column to datetime
+df['timestamp'] = pd.to_datetime(df['timestamp'])
+
+# BigQuery config
 project_id = "observability-459214"
 dataset_id = "monitoring"
 table_id = f"{project_id}.{dataset_id}.grafana_metrics"
 
-# Initialize client
 client = bigquery.Client()
 
-# Define schema (based on your CSV structure)
-# 👉 Adjust these types to match your CSV columns
-schema = [
-    bigquery.SchemaField("timestamp", "TIMESTAMP"),
-    bigquery.SchemaField("metric_name", "STRING"),
-    bigquery.SchemaField("value", "FLOAT"),
-]
-
-# Check if table exists
+# If table doesn't exist, create it
 try:
     client.get_table(table_id)
-    print(f"✅ Table {table_id} exists. Loading data.")
-except Exception as e:
+    print("⚠️ Table exists.")
+except:
     print(f"⚠️ Table not found. Creating table: {table_id}")
+    schema = [
+        bigquery.SchemaField("timestamp", "TIMESTAMP"),
+        bigquery.SchemaField("metric", "STRING"),
+        bigquery.SchemaField("instance", "STRING"),
+        bigquery.SchemaField("value", "FLOAT"),
+    ]
     table = bigquery.Table(table_id, schema=schema)
-    table = client.create_table(table)
+    client.create_table(table)
     print(f"✅ Created table {table_id}")
 
-# Load data
+# Load to BigQuery
 job = client.load_table_from_dataframe(df, table_id)
-job.result()  # Wait for job to complete
-
-print("✅ Data loaded successfully into BigQuery.")
+job.result()  # Wait for the job to complete
+print("✅ Data loaded into BigQuery")
