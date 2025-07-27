@@ -32,4 +32,4 @@ for metric_name, query in queries.items():
 
 df = pd.DataFrame(all_data, columns=["timestamp", "metric_name", "value"])
 df.to_csv("grafana_metrics.csv", index=False)
-print("✅ CSV saved: grafana_metrics.csv")
+print("CSV saved: grafana_metrics.csv")
