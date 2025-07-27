@@ -4,8 +4,9 @@ from google.cloud import bigquery
 # Load CSV
 df = pd.read_csv("grafana_metrics.csv")
 
-# ✅ Fix: Convert timestamp column to datetime
-df['timestamp'] = pd.to_datetime(df['timestamp'])
+# ✅ Fix: Convert timestamp to datetime
+df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
+print(df.dtypes)
 
 # BigQuery config
 project_id = "observability-459214"
@@ -14,10 +15,10 @@ table_id = f"{project_id}.{dataset_id}.grafana_metrics"
 
 client = bigquery.Client()
 
-# If table doesn't exist, create it
+# Check if table exists
 try:
     client.get_table(table_id)
-    print("⚠️ Table exists.")
+    print(f"✅ Table {table_id} exists. Loading data.")
 except:
     print(f"⚠️ Table not found. Creating table: {table_id}")
     schema = [
@@ -32,5 +33,5 @@ except:
 
 # Load to BigQuery
 job = client.load_table_from_dataframe(df, table_id)
-job.result()  # Wait for the job to complete
+job.result()
 print("✅ Data loaded into BigQuery")
