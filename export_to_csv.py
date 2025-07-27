@@ -1,4 +1,3 @@
-
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
@@ -29,9 +28,8 @@ for metric_name, query in queries.items():
     for result in results:
         for value in result["values"]:
             timestamp = datetime.utcfromtimestamp(float(value[0])).isoformat()
-            instance = result.get("metric", {}).get("instance", "unknown")
-            all_data.append([timestamp, metric_name, instance, value[1]])
+            all_data.append([timestamp, metric_name, value[1]])
 
-df = pd.DataFrame(all_data, columns=["timestamp", "metric", "instance", "value"])
+df = pd.DataFrame(all_data, columns=["timestamp", "metric_name", "value"])
 df.to_csv("grafana_metrics.csv", index=False)
 print("✅ CSV saved: grafana_metrics.csv")
