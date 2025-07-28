@@ -26,6 +26,18 @@ except:
         bigquery.SchemaField("metric", "STRING"),
         bigquery.SchemaField("instance", "STRING"),
         bigquery.SchemaField("value", "FLOAT"),
+        bigquery.SchemaField("cpu_p95", "FLOAT"),
+        bigquery.SchemaField("mem_p95", "FLOAT"),
+        bigquery.SchemaField("net_inp95", "FLOAT"),
+        bigquery.SchemaField("net_outp95", "FLOAT"),
+        bigquery.SchemaField("disk_io", "FLOAT"),
+        bigquery.SchemaField("current_type", "STRING"),
+        bigquery.SchemaField("instance_type", "STRING"),
+        bigquery.SchemaField("vCPU", "INTEGER"),
+        bigquery.SchemaField("memory_GB", "FLOAT"),
+        bigquery.SchemaFiled("network_bandwidth", "INTEGER"),
+        bigquery.SchemaField("catalog_disk_io", "INTEGER"),
+        bigquery.SchemaField("recommendation", "STRING"),
     ]
     table = bigquery.Table(table_id, schema=schema)
     client.create_table(table)
