@@ -35,6 +35,7 @@ schema = [
     bigquery.SchemaField("network_bandwidth", "STRING"),
     bigquery.SchemaField("catalog_disk_io", "INTEGER"),
     bigquery.SchemaField("recommendation", "STRING"),
+    bigquery.SchemaField("status_recommendation", "STRING"),
 ]
 
 # Check if table exists, else create it
