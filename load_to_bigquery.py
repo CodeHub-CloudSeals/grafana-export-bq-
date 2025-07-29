@@ -11,7 +11,7 @@ if 'metric_name' in df.columns:
 # Convert 'timestamp' to proper datetime format
 df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
 
-# ✅ Ensure status_recommendation column exists in DataFrame
+# Ensure status_recommendation column exists in DataFrame
 if 'status_recommendation' not in df.columns:
     df['status_recommendation'] = None  # Default value if missing
 
@@ -52,14 +52,14 @@ except:
     table = client.create_table(table)
     print(f"Created table: {table.table_id}")
 
-# ✅ Load data with schema update option
+# Load data with schema update option
 job_config = bigquery.LoadJobConfig(
     write_disposition="WRITE_APPEND",
-    schema_update_options=["ALLOW_FIELD_ADDITION"]  # 👈 allow adding new columns
+    schema_update_options=["ALLOW_FIELD_ADDITION"]  #  allow adding new columns
 )
 
 job = client.load_table_from_dataframe(df, table_id, job_config=job_config)
 job.result()  # Wait for job to finish
 
-print("✅ Data loaded successfully into BigQuery with status_recommendation column.")
+print(" Data loaded successfully into BigQuery with status_recommendation column.")
 
