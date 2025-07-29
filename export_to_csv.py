@@ -48,12 +48,13 @@ df_wide["memory_GB"] = 3.75
 df_wide["network_bandwidth"] = "1 Gbps"
 df_wide["catalog_disk_io"] = 100
 df_wide["recommendation"] = "none"
+df_wide["status_recommendation"] = "none"
 
 # Reorder columns
 final_columns = [
     "timestamp", "instance_id", "cpu_p95", "mem_p95", "net_in_p95", "net_out_p95",
     "disk_io", "current_type", "instance_type", "vCPU", "memory_GB",
-    "network_bandwidth", "catalog_disk_io", "recommendation"
+    "network_bandwidth", "catalog_disk_io", "recommendation", "status_recommendation"
 ]
 
 df_wide = df_wide[final_columns]
