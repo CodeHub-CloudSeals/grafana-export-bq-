@@ -1,11 +1,14 @@
 import requests
 import pandas as pd
+import os
 from datetime import datetime, timedelta
 
-PROM_URL = "http://34.100.247.250:9090"
-STEP = "60"
+PROM_URL = os.environ.get("PROMETHEUS_URL", "http://34.100.247.250:9090")
+STEP = os.environ.get("STEP", "60")
+
+# Adjusted to match 90-minute load test
 now = datetime.utcnow()
-start_time = int((now - timedelta(minutes=5)).timestamp())
+start_time = int((now - timedelta(minutes=90)).timestamp())
 end_time = int(now.timestamp())
 
 queries = {
@@ -40,7 +43,7 @@ df["timestamp"] = pd.to_datetime(df["timestamp"])
 # Pivot so metric names become columns
 df_wide = df.pivot_table(index=["timestamp", "instance_id"], columns="metric_name", values="value", aggfunc="mean").reset_index()
 
-# Add remaining required columns
+# Add remaining columns
 df_wide["current_type"] = "on-demand"
 df_wide["instance_type"] = "n1-standard-1"
 df_wide["vCPU"] = 1
@@ -56,9 +59,13 @@ final_columns = [
     "disk_io", "current_type", "instance_type", "vCPU", "memory_GB",
     "network_bandwidth", "catalog_disk_io", "recommendation", "status_recommendation"
 ]
-
 df_wide = df_wide[final_columns]
 
-# Save to CSV
-df_wide.to_csv("grafana_metrics.csv", index=False)
-print("CSV saved: grafana_metrics.csv")
+# Save with timestamped filename
+filename = f"grafana_metrics_{now.strftime('%Y%m%d_%H%M%S')}.csv"
+df_wide.to_csv(filename, index=False)
+print(f"CSV saved: {filename}")
+
+# Save name to file for next stage
+with open("csv_name.txt", "w") as f:
+    f.write(filename)
