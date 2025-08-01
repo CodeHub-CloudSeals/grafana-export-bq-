@@ -1,29 +1,32 @@
 import pandas as pd
+import os
 from google.cloud import bigquery
 
-# Load your CSV
-df = pd.read_csv("grafana_metrics.csv")
+# Read filename from export script
+with open("csv_name.txt") as f:
+    csv_file = f.read().strip()
 
-# Drop 'metric_name' if it exists (not part of BigQuery schema)
-if 'metric_name' in df.columns:
-    df = df.drop(columns=['metric_name'])
+# Load CSV
+df = pd.read_csv(csv_file)
 
-# Convert 'timestamp' to proper datetime format
-df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
+# Drop nulls to avoid BQ upload issues
+df.dropna(subset=["timestamp", "instance_id"], inplace=True)
 
-# Ensure status_recommendation column exists in DataFrame
-if 'status_recommendation' not in df.columns:
-    df['status_recommendation'] = None  # Default value if missing
+# Convert timestamp
+df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
 
-# Set your project, dataset, and table
+# Ensure all columns exist
+if "status_recommendation" not in df.columns:
+    df["status_recommendation"] = None
+
+# BigQuery Config
 project_id = "observability-459214"
 dataset_id = "monitoring"
 table_id = f"{project_id}.{dataset_id}.grafana_metrics"
 
-# Initialize BigQuery client
 client = bigquery.Client()
 
-# Define schema (including status_recommendation)
+# Define schema
 schema = [
     bigquery.SchemaField("timestamp", "TIMESTAMP"),
     bigquery.SchemaField("instance_id", "STRING"),
@@ -42,24 +45,23 @@ schema = [
     bigquery.SchemaField("status_recommendation", "STRING"),
 ]
 
-# Check if table exists, else create it
+# Create table if not exists
 try:
     client.get_table(table_id)
-    print(f"Table {table_id} exists.")
+    print(f"✅ Table {table_id} exists.")
 except:
-    print(f"Table not found. Creating {table_id} ...")
+    print(f"⚠️ Table not found. Creating {table_id} ...")
     table = bigquery.Table(table_id, schema=schema)
-    table = client.create_table(table)
-    print(f"Created table: {table.table_id}")
+    client.create_table(table)
+    print(f"✅ Created table: {table.table_id}")
 
-# Load data with schema update option
+# Load data
 job_config = bigquery.LoadJobConfig(
     write_disposition="WRITE_APPEND",
-    schema_update_options=["ALLOW_FIELD_ADDITION"]  #  allow adding new columns
+    schema_update_options=["ALLOW_FIELD_ADDITION"]
 )
 
 job = client.load_table_from_dataframe(df, table_id, job_config=job_config)
-job.result()  # Wait for job to finish
+job.result()
 
-print(" Data loaded successfully into BigQuery with status_recommendation column.")
-
+print(f"✅ Uploaded {len(df)} rows to {table_id}")
